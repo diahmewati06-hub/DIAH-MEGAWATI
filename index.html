@@ -1,1 +1,614 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asesmen Bimbingan dan Konseling - SMA</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --correct: #16a34a;
+            --wrong: #dc2626;
+            --border: #e2e8f0;
+        }
 
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 30px 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+        }
+
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .question-card {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: var(--card);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e0e7ff;
+            color: var(--primary-dark);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .options {
+            display: flex;
+            gap: 15px;
+        }
+
+        .option-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .option-btn.selected {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-submit:disabled {
+            background: var(--muted);
+            cursor: not-allowed;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Hasil & Pembahasan */
+        .score-box {
+            text-align: center;
+            padding: 30px;
+            background: #eff6ff;
+            border-radius: 12px;
+            border: 2px solid var(--primary);
+            margin-bottom: 25px;
+        }
+
+        .score-number {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        .review-item {
+            padding: 18px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 5px solid var(--border);
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .review-item.correct {
+            border-left-color: var(--correct);
+        }
+
+        .review-item.wrong {
+            border-left-color: var(--wrong);
+        }
+
+        .explanation {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: #f1f5f9;
+            border-radius: 6px;
+            font-size: 0.92rem;
+            color: #334155;
+        }
+
+        .status-msg {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .status-success { background: #dcfce7; color: #166534; }
+        .status-error { background: #fee2e2; color: #991b1b; }
+
+        @media (max-width: 600px) {
+            .options { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Asesmen Pemahaman Bimbingan & Konseling</h1>
+        <p>Tingkat SMA • Bidang Pribadi, Sosial, Belajar, dan Karier (30 Soal Benar/Salah)</p>
+    </div>
+
+    <!-- Form Identitas -->
+    <div id="intro-section" class="card">
+        <h3>Identitas Peserta Didik</h3>
+        <div class="form-group">
+            <label for="nama">Nama Lengkap</label>
+            <input type="text" id="nama" placeholder="Masukkan nama lengkap Anda" required>
+        </div>
+        <div class="form-group">
+            <label for="kelas">Kelas</label>
+            <input type="text" id="kelas" placeholder="Contoh: XI MIPA 2 atau X-E" required>
+        </div>
+        <div class="form-group">
+            <label for="absen">Nomor Presensi / NIS</label>
+            <input type="text" id="absen" placeholder="Masukkan nomor presensi" required>
+        </div>
+        <button class="btn-submit" onclick="mulaiAsesmen()">Mulai Mengerjakan</button>
+    </div>
+
+    <!-- Area Soal -->
+    <div id="quiz-section" class="hidden">
+        <div id="questions-container"></div>
+        <button id="submit-btn" class="btn-submit" onclick="selesaikanAsesmen()">Selesai & Kirim Hasil ke Guru</button>
+        <div id="email-status" class="status-msg hidden"></div>
+    </div>
+
+    <!-- Area Hasil & Pembahasan -->
+    <div id="result-section" class="hidden">
+        <div class="score-box">
+            <h2>Hasil Asesmen Anda</h2>
+            <p id="student-summary"></p>
+            <div class="score-number" id="final-score">0</div>
+            <p id="score-detail"></p>
+            <div id="email-notification" class="status-msg status-success"></div>
+        </div>
+        <h3>Kunci Jawaban & Pembahasan</h3>
+        <div id="review-container"></div>
+    </div>
+</div>
+
+<script>
+    // =========================================================================
+    // KONFIGURASI EMAIL GURU (GANTI DENGAN EMAIL ANDA SEBELUM UPLOAD KE GITHUB)
+    // =========================================================================
+    const EMAIL_GURU = "ganti.dengan.emailanda@gmail.com";
+
+    // =========================================================================
+    // BANK 30 SOAL BIMBINGAN DAN KONSELING SMA (BENAR / SALAH)
+    // =========================================================================
+    const bankSoal = [
+        {
+            bidang: "Layanan Dasar BK",
+            soal: "Bimbingan dan Konseling di sekolah hanya diperuntukkan bagi siswa yang bermasalah atau melanggar tata tertib sekolah.",
+            jawaban: false,
+            penjelasan: "Salah. Layanan BK bersifat preventif (pencegahan) dan developmental (pengembangan), sehingga ditujukan untuk seluruh siswa guna mengoptimalkan potensi diri, bukan hanya siswa yang bermasalah."
+        },
+        {
+            bidang: "Asas Konseling",
+            soal: "Asas kerahasiaan dalam konseling menjamin bahwa segala data dan cerita pribadi konseli (siswa) tidak akan disebarluaskan oleh guru BK kepada pihak lain tanpa izin, kecuali jika membahayakan nyawa.",
+            jawaban: true,
+            penjelasan: "Benar. Asas kerahasiaan adalah asas kunci dalam BK untuk membangun rasa aman dan kepercayaan (trust) antara siswa dan konselor."
+        },
+        {
+            bidang: "Bimbingan Pribadi",
+            soal: "Self-esteem (harga diri) yang sehat ditandai dengan kemampuan menerima kelebihan sekaligus kekurangan diri sendiri tanpa merasa rendah diri secara berlebihan.",
+            jawaban: true,
+            penjelasan: "Benar. Penerimaan diri (self-acceptance) merupakan fondasi utama kesehatan mental remaja di usia SMA."
+        },
+        {
+            bidang: "Bimbingan Pribadi",
+            soal: "Menghindari masalah dan memendam emosi negatif terus-menerus adalah bentuk regulasi emosi yang paling efektif bagi remaja.",
+            jawaban: false,
+            penjelasan: "Salah. Memendam emosi (represi) justru dapat memicu stres kronis atau ledakan emosi. Regulasi emosi yang sehat meliputi mengenali, menerima, dan menyalurkan emosi secara positif."
+        },
+        {
+            bidang: "Bimbingan Pribadi",
+            soal: "Resiliensi adalah kemampuan seseorang untuk bangkit kembali, beradaptasi, dan tetap tangguh saat menghadapi tekanan, kegagalan, atau situasi sulit.",
+            jawaban: true,
+            penjelasan: "Benar. Resiliensi sangat dibutuhkan siswa SMA dalam menghadapi tekanan akademik maupun dinamika pergaulan."
+        },
+        {
+            bidang: "Bimbingan Pribadi",
+            soal: "Stres selalu berdampak negatif bagi manusia (distress) dan tidak pernah memberikan dorongan positif dalam belajar.",
+            jawaban: false,
+            penjelasan: "Salah. Ada jenis stres positif yang disebut 'Eustress', yaitu tekanan ringan yang memotivasi seseorang untuk fokus menyelesaikan tugas atau ujian tepat waktu."
+        },
+        {
+            bidang: "Bimbingan Pribadi",
+            soal: "Konsep diri (self-concept) seseorang terbentuk sepenuhnya sejak lahir dan tidak dapat berubah meskipun lingkungan dan pengalaman hidupnya berubah.",
+            jawaban: false,
+            penjelasan: "Salah. Konsep diri bersifat dinamis dan terus berkembang melalui interaksi sosial, pengalaman keberhasilan/kegagalan, serta pola pikir individu."
+        },
+        {
+            bidang: "Bimbingan Sosial",
+            soal: "Komunikasi asertif adalah kemampuan menyampaikan pendapat, perasaan, dan batasan diri secara jujur dan tegas tanpa menyakiti atau merendahkan orang lain.",
+            jawaban: true,
+            penjelasan: "Benar. Komunikasi asertif berbeda dengan agresif (menyerang) maupun pasif (selalu mengalah). Ini sangat penting untuk menolak ajakan negatif teman sebaya."
+        },
+        {
+            bidang: "Bimbingan Sosial",
+            soal: "Perundungan siber (cyberbullying) tidak termasuk tindakan bullying karena tidak melibatkan kontak fisik secara langsung.",
+            jawaban: false,
+            penjelasan: "Salah. Cyberbullying adalah bentuk perundungan melalui media digital yang dampak psikologisnya sama beratnya—bahkan sering lebih luas—dibandingkan perundungan fisik."
+        },
+        {
+            bidang: "Bimbingan Sosial",
+            soal: "Empati berbeda dengan simpati; empati berarti berusaha merasakan dan memahami sudut pandang orang lain seolah berada di posisi mereka.",
+            jawaban: true,
+            penjelasan: "Benar. Simpati sebatas rasa kasihan dari luar, sedangkan empati melibatkan pemahaman mendalam terhadap perasaan orang lain."
+        },
+        {
+            bidang: "Bimbingan Sosial",
+            soal: "Konformitas negatif terhadap teman sebaya (peer pressure) terjadi ketika seorang siswa mengikuti perilaku berisiko teman-temannya demi diterima dalam kelompok.",
+            jawaban: true,
+            penjelasan: "Benar. Remaja sering mengalami tekanan teman sebaya; kemampuan berpikir kritis dan asertif dibutuhkan agar tidak terjebak konformitas negatif."
+        },
+        {
+            bidang: "Bimbingan Sosial",
+            soal: "Dalam manajemen konflik, gaya 'kolaborasi' (win-win solution) berupaya mencari jalan tengah yang memuaskan kepentingan kedua belah pihak.",
+            jawaban: true,
+            penjelasan: "Benar. Kolaborasi mengutamakan dialog terbuka untuk menyelesaikan akar masalah tanpa ada pihak yang dirugikan."
+        },
+        {
+            bidang: "Bimbingan Sosial",
+            soal: "Menjadi 'bystander' yang hanya diam dan menonton saat teman mengalami perundungan di sekolah merupakan sikap netral yang tidak berdampak apa-apa.",
+            jawaban: false,
+            penjelasan: "Salah. Sikap diam penonton (passive bystander) secara tidak langsung memberi pembenaran kepada pelaku dan membuat korban merasa sendirian."
+        },
+        {
+            bidang: "Bimbingan Sosial",
+            soal: "Jejak digital (digital footprint) di media sosial bersifat permanen dan dapat memengaruhi peluang beasiswa maupun rekrutmen kerja di masa depan.",
+            jawaban: true,
+            penjelasan: "Benar. Banyak institusi pendidikan dan perusahaan kini meninjau etika bermedia sosial calon pelamar melalui jejak digital mereka."
+        },
+        {
+            bidang: "Bimbingan Belajar",
+            soal: "Gaya belajar kinestetik lebih optimal menyerap informasi melalui praktik langsung, eksperimen, atau aktivitas fisik dibandingkan hanya mendengarkan ceramah.",
+            jawaban: true,
+            penjelasan: "Benar. Siswa kinestetik membutuhkan keterlibatan gerak dan simulasi nyata dalam memahami materi pelajaran."
+        },
+        {
+            bidang: "Bimbingan Belajar",
+            soal: "Sistem Kebut Semalam (SKS) terbukti secara ilmiah jauh lebih efektif untuk ingatan jangka panjang dibandingkan belajar dicicil (spaced repetition).",
+            jawaban: false,
+            penjelasan: "Salah. Belajar dengan jeda waktu teratur (spaced repetition) memperkuat koneksi saraf memori jangka panjang, sedangkan SKS hanya mengandalkan memori jangka pendek."
+        },
+        {
+            bidang: "Bimbingan Belajar",
+            soal: "Prokrastinasi akademik adalah kebiasaan menunda-nunda mengerjakan tugas sekolah meskipun mengetahui dampak buruk dari penundaan tersebut.",
+            jawaban: true,
+            penjelasan: "Benar. Prokrastinasi sering kali bukan karena malas, melainkan karena rasa takut gagal, perfeksionisme, atau manajemen waktu yang buruk."
+        },
+        {
+            bidang: "Bimbingan Belajar",
+            soal: "Teknik Pomodoro membagi waktu belajar menjadi interval fokus (misalnya 25 menit) yang diselingi istirahat singkat (5 menit) untuk menjaga konsentrasi otak.",
+            jawaban: true,
+            penjelasan: "Benar. Teknik ini mencegah kelelahan mental (burnout) dan menjaga fokus tetap tinggi selama sesi belajar."
+        },
+        {
+            bidang: "Bimbingan Belajar",
+            soal: "Motivasi intrinsik dalam belajar muncul karena dorongan hadiah uang dari orang tua atau ketakutan akan hukuman guru.",
+            jawaban: false,
+            penjelasan: "Salah. Hadiah dan hukuman adalah motivasi ekstrinsik. Motivasi intrinsik berasal dari dalam diri, seperti rasa ingin tahu dan kepuasan menguasai ilmu."
+        },
+        {
+            bidang: "Bimbingan Belajar",
+            soal: "Dalam matriks manajemen waktu Eisenhower, tugas yang 'Penting tetapi Tidak Mendesak' (seperti mencicil persiapan ujian akhir) sebaiknya dijadwalkan secara rutin.",
+            jawaban: true,
+            penjelasan: "Benar. Kuadran II (Penting & Tidak Mendesak) adalah kunci produktivitas agar tugas tidak menumpuk menjadi krisis di menit terakhir."
+        },
+        {
+            bidang: "Bimbingan Belajar",
+            soal: "Pola pikir berkembang (growth mindset) meyakini bahwa kecerdasan dan bakat dapat ditingkatkan melalui usaha, strategi yang tepat, dan belajar dari kesalahan.",
+            jawaban: true,
+            penjelasan: "Benar. Berbeda dengan fixed mindset yang menganggap kemampuan bersifat tetap, growth mindset mendorong siswa terus bertumbuh."
+        },
+        {
+            bidang: "Bimbingan Karier",
+            soal: "Pemilihan jurusan kuliah atau karier sebaiknya hanya didasarkan pada tren pekerjaan yang sedang populer tanpa mempertimbangkan minat dan kemampuan diri.",
+            jawaban: false,
+            penjelasan: "Salah. Keputusan karier yang matang harus memadukan aspek internal (minat, bakat, nilai hidup, kepribadian) dan eksternal (peluang pasar kerja dan dukungan keluarga)."
+        },
+        {
+            bidang: "Bimbingan Karier",
+            soal: "Menurut teori karier John Holland (RIASEC), tipe 'Investigative' cocok untuk individu yang menyukai analisis, penelitian, sains, dan pemecahan masalah kompleks.",
+            jawaban: true,
+            penjelasan: "Benar. Tipe Investigative (I) cenderung analitis, intelektual, dan senang mengeksplorasi ide-ide ilmiah."
+        },
+        {
+            bidang: "Bimbingan Karier",
+            soal: "Perbedaan mendasar antara pendidikan program Sarjana (S1) dan Vokasi (D3/D4) adalah Vokasi memiliki porsi praktik keahlian terapan yang jauh lebih besar daripada teori.",
+            jawaban: true,
+            penjelasan: "Benar. Pendidikan vokasi dirancang untuk mencetak tenaga terampil siap kerja dengan kurikulum berbasis praktik industri (sekitar 60-70% praktik)."
+        },
+        {
+            bidang: "Bimbingan Karier",
+            soal: "Soft skills seperti kemampuan bekerja dalam tim, komunikasi, dan pemecahan masalah kini tidak lagi dibutuhkan perusahaan karena sudah digantikan oleh kecerdasan buatan (AI).",
+            jawaban: false,
+            penjelasan: "Salah. Justru di era AI, soft skills manusiawi seperti empati, kepemimpinan, kreativitas, dan kolaborasi menjadi nilai jual utama di dunia kerja."
+        },
+        {
+            bidang: "Bimbingan Karier",
+            soal: "Perencanaan karier di tingkat SMA hanya berlaku bagi siswa yang berencana melanjutkan pendidikan ke perguruan tinggi.",
+            jawaban: false,
+            penjelasan: "Salah. Perencanaan karier mencakup seluruh jalur setelah lulus SMA, baik melanjutkan kuliah, bekerja, berwirausaha, maupun mengikuti pelatihan kursus/kedinasan."
+        },
+        {
+            bidang: "Bimbingan Karier",
+            soal: "Bakat (aptitude) adalah potensi bawaan yang memudahkan seseorang mempelajari suatu bidang, sedangkan minat (interest) adalah ketertarikan atau rasa senang terhadap suatu aktivitas.",
+            jawaban: true,
+            penjelasan: "Benar. Idealnya seseorang menekuni bidang yang memadukan bakat dan minat secara selaras."
+        },
+        {
+            bidang: "Bimbingan Karier",
+            soal: "Mengikuti kegiatan ekstrakurikuler dan organisasi selama SMA tidak memiliki manfaat dalam menyusun portofolio karier maupun pendaftaran jalur prestasi.",
+            jawaban: false,
+            penjelasan: "Salah. Pengalaman organisasi dan prestasi non-akademik melatih kepemimpinan serta menjadi nilai tambah penting dalam seleksi perguruan tinggi maupun beasiswa."
+        },
+        {
+            bidang: "Kesehatan Mental & Digital",
+            soal: "FOMO (Fear of Missing Out) adalah kecemasan sosial akibat merasa tertinggal tren atau aktivitas menyenangkan yang diunggah orang lain di media sosial.",
+            jawaban: true,
+            penjelasan: "Benar. FOMO dapat memicu perilaku konsumtif, perbandingan sosial yang tidak sehat, dan gangguan fokus belajar."
+        },
+        {
+            bidang: "Layanan Konseling",
+            soal: "Konseling individual dilakukan dalam hubungan tatap muka (atau daring) yang bersifat pribadi antara guru BK dan siswa untuk membantu mengentaskan masalah spesifik siswa.",
+            jawaban: true,
+            penjelasan: "Benar. Konseling individual memungkinkan pendalaman masalah secara personal dengan jaminan kerahasiaan penuh."
+        }
+    ];
+
+    let jawabanSiswa = new Array(bankSoal.length).fill(null);
+    let dataSiswa = {};
+
+    function mulaiAsesmen() {
+        const nama = document.getElementById('nama').value.trim();
+        const kelas = document.getElementById('kelas').value.trim();
+        const absen = document.getElementById('absen').value.trim();
+
+        if (!nama || !kelas || !absen) {
+            alert("Mohon lengkapi Nama, Kelas, dan Nomor Presensi terlebih dahulu.");
+            return;
+        }
+
+        dataSiswa = { nama, kelas, absen };
+        document.getElementById('intro-section').classList.add('hidden');
+        document.getElementById('quiz-section').classList.remove('hidden');
+        renderSoal();
+        window.scrollTo(0, 0);
+    }
+
+    function renderSoal() {
+        const container = document.getElementById('questions-container');
+        container.innerHTML = '';
+
+        bankSoal.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.innerHTML = `
+                <span class="badge">Soal ${index + 1} • ${item.bidang}</span>
+                <div class="question-text">${item.soal}</div>
+                <div class="options">
+                    <button type="button" class="option-btn" id="btn-true-${index}" onclick="pilihJawaban(${index}, true)">BENAR</button>
+                    <button type="button" class="option-btn" id="btn-false-${index}" onclick="pilihJawaban(${index}, false)">SALAH</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function pilihJawaban(index, nilai) {
+        jawabanSiswa[index] = nilai;
+        const btnTrue = document.getElementById(`btn-true-${index}`);
+        const btnFalse = document.getElementById(`btn-false-${index}`);
+
+        btnTrue.classList.remove('selected');
+        btnFalse.classList.remove('selected');
+
+        if (nilai === true) {
+            btnTrue.classList.add('selected');
+        } else {
+            btnFalse.classList.add('selected');
+        }
+    }
+
+    async function selesaikanAsesmen() {
+        // Cek apakah semua soal sudah dijawab
+        const belumDijawab = jawabanSiswa.findIndex(val => val === null);
+        if (belumDijawab !== -1) {
+            alert(`Anda belum menjawab Soal Nomor ${belumDijawab + 1}. Silakan lengkapi seluruh soal.`);
+            document.getElementById(`btn-true-${belumDijawab}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = "Sedang memproses & mengirim hasil ke email guru...";
+
+        // Hitung skor
+        let jumlahBenar = 0;
+        let ringkasanJawaban = "";
+
+        bankSoal.forEach((item, idx) => {
+            const isCorrect = jawabanSiswa[idx] === item.jawaban;
+            if (isCorrect) jumlahBenar++;
+            const teksSiswa = jawabanSiswa[idx] ? "Benar" : "Salah";
+            const status = isCorrect ? "✓" : "✗";
+            ringkasanJawaban += `No.${idx + 1}: ${teksSiswa} (${status}) | `;
+        });
+
+        const nilaiAkhir = Math.round((jumlahBenar / bankSoal.length) * 100);
+
+        // Kirim hasil ke email guru via FormSubmit AJAX
+        let statusEmailTeks = "";
+        try {
+            const response = await fetch(`https://formsubmit.co/ajax/${EMAIL_GURU}`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    _subject: `Hasil Asesmen BK - ${dataSiswa.nama} (${dataSiswa.kelas})`,
+                    Nama_Siswa: dataSiswa.nama,
+                    Kelas: dataSiswa.kelas,
+                    Nomor_Presensi: dataSiswa.absen,
+                    Nilai_Akhir: `${nilaiAkhir} / 100`,
+                    Jumlah_Benar: `${jumlahBenar} dari ${bankSoal.length} soal`,
+                    Rincian_Jawaban: ringkasanJawaban
+                })
+            });
+
+            if (response.ok) {
+                statusEmailTeks = "✓ Laporan nilai berhasil dikirim secara otomatis ke email Guru BK.";
+            } else {
+                statusEmailTeks = "⚠ Hasil tersimpan di layar, namun pengiriman email tertunda (pastikan email guru sudah diaktivasi).";
+            }
+        } catch (error) {
+            statusEmailTeks = "⚠ Gagal terhubung ke layanan email. Silakan screenshot halaman ini sebagai bukti pengerjaan.";
+        }
+
+        tampilkanHasil(nilaiAkhir, jumlahBenar, statusEmailTeks);
+    }
+
+    function tampilkanHasil(nilaiAkhir, jumlahBenar, statusEmailTeks) {
+        document.getElementById('quiz-section').classList.add('hidden');
+        document.getElementById('result-section').classList.remove('hidden');
+
+        document.getElementById('student-summary').innerText = `${dataSiswa.nama} • Kelas ${dataSiswa.kelas} (No. ${dataSiswa.absen})`;
+        document.getElementById('final-score').innerText = nilaiAkhir;
+        document.getElementById('score-detail').innerText = `Menjawab benar ${jumlahBenar} dari ${bankSoal.length} soal`;
+        document.getElementById('email-notification').innerText = statusEmailTeks;
+
+        const reviewContainer = document.getElementById('review-container');
+        reviewContainer.innerHTML = '';
+
+        bankSoal.forEach((item, index) => {
+            const isCorrect = jawabanSiswa[index] === item.jawaban;
+            const teksJawabanSiswa = jawabanSiswa[index] ? "BENAR" : "SALAH";
+            const teksKunci = item.jawaban ? "BENAR" : "SALAH";
+
+            const div = document.createElement('div');
+            div.className = `review-item ${isCorrect ? 'correct' : 'wrong'}`;
+            div.innerHTML = `
+                <strong>Soal ${index + 1} (${item.bidang})</strong>
+                <p>${item.soal}</p>
+                <div>
+                    Jawaban Anda: <strong>${teksJawabanSiswa}</strong> 
+                    ${isCorrect ? '<span style="color:var(--correct)">✔ Tepat</span>' : `<span style="color:var(--wrong)">✘ Kurang Tepat (Kunci: ${teksKunci})</span>`}
+                </div>
+                <div class="explanation">
+                    <strong>Pembahasan:</strong> ${item.penjelasan}
+                </div>
+            `;
+            reviewContainer.appendChild(div);
+        });
+
+        window.scrollTo(0, 0);
+    }
+</script>
+
+</body>
+</html>
